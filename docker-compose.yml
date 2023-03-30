@@ -1,0 +1,35 @@
+# docker-compose syntax version
+version: '3.7'
+
+services:
+    php:
+        image: php
+        build:
+            context: .
+            dockerfile: Dockerfile
+            args:
+                UID: 1000
+                GID: 1000
+        container_name: php
+        hostname: php
+
+        working_dir: /app
+        extra_hosts:
+            - "host.docker.internal:host-gateway"
+
+    nginx:
+        image: nginx:alpine
+        restart: unless-stopped
+        container_name: nginx
+        tty: true
+        healthcheck:
+            test: curl -f http://localhost || exit 1
+        ports:
+            - "8082:8082"
+        volumes:
+            - ./public/:/app/public
+            - ./nginx.conf:/etc/nginx/conf.d/local.conf
+        links:
+            - php
+
+
